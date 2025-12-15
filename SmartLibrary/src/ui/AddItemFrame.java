@@ -1,15 +1,16 @@
 package ui;
 
 import javax.swing.*;
+
+import Classes.Book;
+import Classes.DVD;
+import Classes.Magazine;
+import Interfaces.LibraryItem;
+import Main.LibraryManager;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import model.Book;
-import model.Magazine;
-import model.DVD;
-import model.LibraryItem;
-import service.LibraryManager;
 
 public class AddItemFrame extends JFrame {
 

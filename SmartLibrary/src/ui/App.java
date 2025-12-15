@@ -2,9 +2,9 @@ package ui;
 
 import javax.swing.SwingUtilities;
 
-import service.LibraryManager;
-import model.Book;
-import model.Member;
+import Classes.Book;
+import Classes.Member;
+import Main.LibraryManager;
 
 public class App {
 

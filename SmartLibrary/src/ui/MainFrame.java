@@ -1,11 +1,12 @@
 package ui;
 
 import javax.swing.*;
+
+import Main.LibraryManager;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import service.LibraryManager;
 
 public class MainFrame extends JFrame {
 

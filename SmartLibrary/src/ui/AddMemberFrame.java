@@ -1,12 +1,13 @@
 package ui;
 
 import javax.swing.*;
+
+import Classes.Member;
+import Main.LibraryManager;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import model.Member;
-import service.LibraryManager;
 
 public class AddMemberFrame extends JFrame {
 

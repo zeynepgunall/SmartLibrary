@@ -1,10 +1,11 @@
 package ui;
 
 import javax.swing.*;
-import java.awt.*;
 
-import service.LibraryManager;
-import model.LibraryItem;
+import Interfaces.LibraryItem;
+import Main.LibraryManager;
+
+import java.awt.*;
 
 public class ViewItemsFrame extends JFrame {
 

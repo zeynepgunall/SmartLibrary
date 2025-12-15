@@ -1,9 +1,10 @@
 package ui;
 
-import model.Member;
-import service.LibraryManager;
-
 import javax.swing.*;
+
+import Classes.Member;
+import Main.LibraryManager;
+
 import java.awt.*;
 
 public class BorrowReturnFrame extends JFrame {
@@ -36,7 +37,7 @@ public class BorrowReturnFrame extends JFrame {
 
         JPanel form = new JPanel(new GridLayout(2, 2, 8, 8));
 
-        form.add(new JLabel("Member (optional):"));
+        form.add(new JLabel("Member:"));
         cmbMembers = new JComboBox<>();
         form.add(cmbMembers);
 
@@ -76,19 +77,25 @@ public class BorrowReturnFrame extends JFrame {
     }
 
     private void handleBorrow() {
+        Member selected = (Member) cmbMembers.getSelectedItem();
         String itemId = txtItemId.getText().trim();
 
+        if (selected == null) {
+            setResult("Please select a member.", false);
+            return;
+        }
         if (itemId.isEmpty()) {
             setResult("Please enter an item ID.", false);
             return;
         }
 
-        boolean ok = libraryManager.borrowItem(itemId);
+        boolean ok = libraryManager.borrowItem(selected.getMemberId(), itemId);
         setResult(ok
                 ? "Borrow successful."
-                : "Borrow failed (not found / not borrowable / already borrowed).",
+                : "Borrow failed (member/item not found / already borrowed).",
                 ok);
     }
+
 
     private void handleReturn() {
         String itemId = txtItemId.getText().trim();
