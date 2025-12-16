@@ -2,6 +2,7 @@ package Main;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -10,20 +11,30 @@ import Classes.BorrowTransaction;
 import Classes.Member;
 import Interfaces.LibraryItem;
 
-public class LibraryManager {
+public final class LibraryManager {
 
-    private final List<LibraryItem> items = new ArrayList<>();
-    private final List<Member> members = new ArrayList<>();
-    private final List<BorrowTransaction> transactions = new ArrayList<>();
+    // --- System Class: all members static ---
+    private static final List<LibraryItem> items = new ArrayList<>();
+    private static final List<Member> members = new ArrayList<>();
+    private static final List<BorrowTransaction> transactions = new ArrayList<>();
 
-    private final Set<String> itemIds = new HashSet<>();
-    private final Set<String> memberIds = new HashSet<>();
+    private static final Set<String> itemIds = new HashSet<>();
+    private static final Set<String> memberIds = new HashSet<>();
 
-    public boolean addItem(LibraryItem item) {
-        if (item == null || item.getId() == null) return false;
+    // Prevent instantiation
+    private LibraryManager() {}
 
-        String id = item.getId().trim();
-        if (id.isEmpty()) return false;
+    // --- Helpers ---
+    private static String norm(String s) {
+        return (s == null) ? null : s.trim();
+    }
+
+    // --- Add ---
+    public static boolean addItem(LibraryItem item) {
+        if (item == null) return false;
+
+        String id = norm(item.getId());
+        if (id == null || id.isEmpty()) return false;
         if (itemIds.contains(id)) return false;
 
         items.add(item);
@@ -31,11 +42,11 @@ public class LibraryManager {
         return true;
     }
 
-    public boolean addMember(Member member) {
-        if (member == null || member.getMemberId() == null) return false;
+    public static boolean addMember(Member member) {
+        if (member == null) return false;
 
-        String id = member.getMemberId().trim();
-        if (id.isEmpty()) return false;
+        String id = norm(member.getMemberId());
+        if (id == null || id.isEmpty()) return false;
         if (memberIds.contains(id)) return false;
 
         members.add(member);
@@ -43,7 +54,8 @@ public class LibraryManager {
         return true;
     }
 
-    public String displayItems() {
+    // --- Display ---
+    public static String displayItems() {
         if (items.isEmpty()) return "No items found.";
         StringBuilder sb = new StringBuilder();
         for (LibraryItem item : items) {
@@ -52,72 +64,79 @@ public class LibraryManager {
         return sb.toString();
     }
 
-    public String displayMembers() {
+    public static String displayMembers() {
         if (members.isEmpty()) return "No members found.";
         StringBuilder sb = new StringBuilder();
         for (Member m : members) {
-            sb.append(m.toString()).append("\n");
+            sb.append(m).append("\n");
         }
         return sb.toString();
     }
 
-    public String displayTransactions() {
+    public static String displayTransactions() {
         if (transactions.isEmpty()) return "No transactions found.";
         StringBuilder sb = new StringBuilder();
         for (BorrowTransaction tx : transactions) {
-            sb.append(tx.toString()).append("\n");
+            sb.append(tx).append("\n");
         }
         return sb.toString();
     }
 
-    public LibraryItem findItemById(String id) {
-        if (id == null) return null;
+    // --- Find ---
+    public static LibraryItem findItemById(String id) {
+        String key = norm(id);
+        if (key == null || key.isEmpty()) return null;
+
         for (LibraryItem item : items) {
-            if (item.getId().equals(id.trim())) {
-                return item;
-            }
+            String itemId = norm(item.getId());
+            if (key.equals(itemId)) return item;
         }
         return null;
     }
 
-    public Member findMemberById(String id) {
-        if (id == null) return null;
+    public static Member findMemberById(String id) {
+        String key = norm(id);
+        if (key == null || key.isEmpty()) return null;
+
         for (Member m : members) {
-            if (m.getMemberId().equals(id.trim())) {
-                return m;
-            }
+            String memberId = norm(m.getMemberId());
+            if (key.equals(memberId)) return m;
         }
         return null;
     }
 
-    public boolean deleteItem(String itemId) {
+    // --- Delete ---
+    public static boolean deleteItem(String itemId) {
         LibraryItem item = findItemById(itemId);
         if (item == null) return false;
 
+        // borrowed item cannot be deleted
         if (!item.isAvailable()) return false;
 
         items.remove(item);
-        itemIds.remove(item.getId());
+        itemIds.remove(norm(item.getId()));
         return true;
     }
 
-    public boolean deleteMember(String memberId) {
+    public static boolean deleteMember(String memberId) {
         Member member = findMemberById(memberId);
         if (member == null) return false;
 
+        // cannot delete member with an active borrow
+        String mid = norm(member.getMemberId());
         for (BorrowTransaction tx : transactions) {
-            if (!tx.isReturned() &&
-                tx.getMember().getMemberId().equals(member.getMemberId())) {
+            if (!tx.isReturned() && norm(tx.getMember().getMemberId()).equals(mid)) {
                 return false;
             }
         }
 
         members.remove(member);
-        memberIds.remove(member.getMemberId());
+        memberIds.remove(mid);
         return true;
     }
 
-    public boolean borrowItem(String memberId, String itemId) {
+    // --- Borrow / Return ---
+    public static boolean borrowItem(String memberId, String itemId) {
         Member member = findMemberById(memberId);
         LibraryItem item = findItemById(itemId);
 
@@ -125,20 +144,21 @@ public class LibraryManager {
         if (!item.isAvailable()) return false;
 
         item.borrowItem();
-        BorrowTransaction tx = new BorrowTransaction(member, item);
-        transactions.add(tx);
+        transactions.add(new BorrowTransaction(member, item));
         return true;
     }
 
-    public boolean returnItem(String itemId) {
+    public static boolean returnItem(String itemId) {
         LibraryItem item = findItemById(itemId);
-        if (item == null || item.isAvailable()) return false;
+        if (item == null) return false;
 
+        // if it's already available, there's nothing to return
+        if (item.isAvailable()) return false;
+
+        String iid = norm(item.getId());
         for (int i = transactions.size() - 1; i >= 0; i--) {
             BorrowTransaction tx = transactions.get(i);
-            if (!tx.isReturned() &&
-                tx.getItem().getId().equals(item.getId())) {
-
+            if (!tx.isReturned() && norm(tx.getItem().getId()).equals(iid)) {
                 tx.markReturned(LocalDate.now());
                 item.returnItem();
                 return true;
@@ -147,7 +167,8 @@ public class LibraryManager {
         return false;
     }
 
-    public int getAvailableItemCount() {
+    // --- Counts ---
+    public static int getAvailableItemCount() {
         int count = 0;
         for (LibraryItem item : items) {
             if (item.isAvailable()) count++;
@@ -155,19 +176,20 @@ public class LibraryManager {
         return count;
     }
 
-    public int getBorrowedItemCount() {
+    public static int getBorrowedItemCount() {
         return items.size() - getAvailableItemCount();
     }
 
-    public List<LibraryItem> getAllItems() {
-        return items;
+    // --- Safe getters (do not expose internal lists directly) ---
+    public static List<LibraryItem> getAllItems() {
+        return Collections.unmodifiableList(items);
     }
 
-    public List<Member> getAllMembers() {
-        return members;
+    public static List<Member> getAllMembers() {
+        return Collections.unmodifiableList(members);
     }
 
-    public List<BorrowTransaction> getAllTransactions() {
-        return transactions;
+    public static List<BorrowTransaction> getAllTransactions() {
+        return Collections.unmodifiableList(transactions);
     }
 }
