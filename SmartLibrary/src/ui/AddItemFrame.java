@@ -58,6 +58,8 @@ public class AddItemFrame extends JFrame {
         txtDuration = new JTextField();
 
         JButton btnSave = new JButton("Save");
+        
+        JButton btnDelete = new JButton("Delete");
 
         // Update visible fields when item type changes
         cmbType.addActionListener(new ActionListener() {
@@ -76,6 +78,29 @@ public class AddItemFrame extends JFrame {
                 saveItem();
             }
         });
+        
+        btnDelete.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Fix 1: Get text from the TextField (txtId), not the Label (lblId)
+                String id = txtId.getText().trim(); 
+
+                // Fix 2: Use the instance 'libraryManager' (lowercase), not the class 'LibraryManager'
+                // Note: Make sure your LibraryManager class actually has a method named 'deleteItem' that returns a boolean
+                if (!libraryManager.deleteItem(id)) {
+                    // Fix 3: Use AddItemFrame.this and showMessageDialog
+                    JOptionPane.showMessageDialog(AddItemFrame.this,
+                            "Item is borrowed or can not be found");
+                } else {
+                    // Fix 4: Update the success message
+                    JOptionPane.showMessageDialog(AddItemFrame.this,
+                            "Item deleted successfully!");
+                    
+                    
+                    dispose();
+                }
+            }
+        });
 
         JPanel formPanel = new JPanel(new GridLayout(6, 2, 5, 5));
         formPanel.add(lblType);        formPanel.add(cmbType);
@@ -89,8 +114,11 @@ public class AddItemFrame extends JFrame {
         add(formPanel, BorderLayout.CENTER);
 
         JPanel bottomPanel = new JPanel();
+        
         bottomPanel.add(btnSave);
+        bottomPanel.add(btnDelete);
         add(bottomPanel, BorderLayout.SOUTH);
+        
     }
 
     // Show/hide fields based on selected item type
@@ -184,3 +212,4 @@ public class AddItemFrame extends JFrame {
         }
     }
 }
+
